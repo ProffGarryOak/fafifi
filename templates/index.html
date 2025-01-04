@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fastest Finger First</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Fastest Finger First Practice</h1>
+        <div id="question-container">
+            {% for question in questions %}
+                <div class="question" id="question-{{ loop.index0 }}" style="display: none;">
+                    <p>{{ question['question'] }}</p>
+                    <div class="options-container">
+                        {% for option in question['shuffled_options'] %}
+                            <button class="answer-btn" data-question-id="{{ loop.index0 }}" data-answer="{{ option }}" disabled>{{ option }}</button>
+                        {% endfor %}
+                    </div>
+                    <div id="result-{{ loop.index0 }}"></div>
+                    <button class="submit-btn" id="submit-{{ loop.index0 }}" style="display: none;">Submit</button>
+                    <button class="next-btn" id="next-{{ loop.index0 }}" style="display: none;">Next</button>
+                </div>
+            {% endfor %}
+        </div>
+        <div id="start-btn-container">
+            <button id="start-btn">Start</button>
+        </div>
+        <div id="final-result"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            let currentQuestion = 0;
+            let selectedSequence = [];
+            let startTime;
+            let timerRunning = false;
+
+            // Show the first question when the Start button is clicked
+            $("#start-btn").click(function() {
+                $("#start-btn").hide();
+                $("#question-" + currentQuestion).show();
+                startTime = Date.now();
+                timerRunning = true; // Indicate timer has started
+                $(".answer-btn").prop('disabled', false);  // Enable buttons for the first question
+                $("#submit-" + currentQuestion).show(); // Show the Submit button
+            });
+
+            // Handle the button click and track the selected sequence
+            $(".answer-btn").click(function() {
+                let questionId = $(this).data('question-id');
+                let selectedAnswer = $(this).data('answer');
+                let button = $(this);
+                
+                // Change button color to blue on tap
+                button.css("background-color", "blue").prop('disabled', true);
+
+                selectedSequence.push(selectedAnswer);
+            });
+
+            // Handle Submit button click
+            $(".submit-btn").click(function() {
+                let questionId = $(this).attr('id').split('-')[1];
+
+                // When Submit is clicked, evaluate the answer
+                $.get("/check_sequence/" + questionId + "/" + selectedSequence.join(','), function(response) {
+                    if (selectedSequence.length === 4) {
+                        let endTime = Date.now();
+                        let timeTaken = (endTime - startTime) / 1000;
+
+                        if (response.status == "correct") {
+                            $("#result-" + questionId).html("Correct! Time taken: " + timeTaken + " seconds");
+                        } else {
+                            $("#result-" + questionId).html("Incorrect! The correct order is: " + response.correct_order);
+                        }
+
+                        // Show the Next button after submitting
+                        $("#next-" + questionId).show();
+                        $(".answer-btn").prop('disabled', true);  // Disable further button taps
+                        $("#submit-" + questionId).hide(); // Hide the Submit button after submission
+                    }
+                });
+            });
+
+            // Move to the next question when the Next button is clicked
+            $(".next-btn").click(function() {
+                let questionId = $(this).attr('id').split('-')[1];
+                $("#question-" + questionId).hide();
+                selectedSequence = [];  // Reset sequence for next question
+                currentQuestion++;
+
+                if (currentQuestion < {{ questions|length }}) {
+                    // Reset the timer for the next question
+                    startTime = Date.now();
+                    timerRunning = true;  // Start timer for the next question
+
+                    // Show next question and enable buttons
+                    $("#question-" + currentQuestion).show();
+                    $(".answer-btn").prop('disabled', false);
+                    $("#result-" + currentQuestion).html('');
+                    $(this).hide();
+                    $("#submit-" + currentQuestion).show(); // Show Submit button for next question
+                } else {
+                    $("#final-result").html("Congratulations! You've completed all the questions.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

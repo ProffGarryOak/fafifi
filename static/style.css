@@ -1,0 +1,76 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 600px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%; /* Full width on small screens */
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button.correct {
+    background-color: green;
+}
+
+button.incorrect {
+    background-color: red;
+}
+
+button:disabled {
+    background-color: #ccc;
+}
+
+.options-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.next-btn, .submit-btn {
+    display: none;
+}
+
+#final-result {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+button:focus {
+    outline: none;
+}
+
+button[disabled] {
+    pointer-events: none;
+}
+
+@media (max-width: 600px) {
+    .options-container {
+        grid-template-columns: 1fr; /* Stack buttons on smaller screens */
+    }
+}
